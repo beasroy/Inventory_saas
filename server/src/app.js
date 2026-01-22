@@ -1,11 +1,22 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-const app = express();
+import cookieParser from 'cookie-parser';
+import v1Routes from './routes/v1/index.js';
 
-app.use(cors());
+const app = express();
+  
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  credentials: true
+}));
+
 app.use(helmet());
+app.use(cookieParser());
 app.use(express.json());
+
+
+app.use('/api/v1', v1Routes);
 
 app.get('/health', (req, res) => {
     res.status(200).json({ 
