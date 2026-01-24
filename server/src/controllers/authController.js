@@ -5,9 +5,9 @@ import jwt from 'jsonwebtoken';
 
 export const getPermissionsForRole = (role) => {
     const permissions = {
-        owner: ['view_products', 'edit_products', 'view_orders', 'create_orders',
+        owner: ['view_products','create_products', 'edit_products', 'delete_products', 'view_orders', 'create_orders',
             'view_inventory', 'adjust_inventory', 'view_users', 'invite_users'],
-        manager: ['view_products', 'edit_products', 'view_orders', 'create_orders',
+        manager: ['view_products', 'create_products', 'edit_products', 'view_orders', 'create_orders',
             'view_inventory', 'adjust_inventory'],
         staff: ['view_products', 'view_orders', 'create_orders', 'view_inventory']
     };

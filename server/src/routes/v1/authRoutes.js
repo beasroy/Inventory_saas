@@ -9,7 +9,6 @@ router.post('/register', register);
 router.post('/logout', logout); 
 router.post('/accept-invite', acceptInvite);
 
-// Protected routes (authentication required)
 router.get('/current-user', authenticate, getCurrentUser);
 
 export default router;
