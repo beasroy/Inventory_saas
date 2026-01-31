@@ -58,11 +58,10 @@ supplierSchema.index({ tenantId: 1, supplierCode: 1 }, { unique: true });
 supplierSchema.index({ tenantId: 1 });
 
 // Validate email format if provided
-supplierSchema.pre('save', function(next) {
+supplierSchema.pre('save', async function() {
     if (this.contactEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.contactEmail)) {
-        return next(new Error('Invalid email format'));
+        throw new Error('Invalid email format');
     }
-    next();
 });
 
 const Supplier = mongoose.model('Supplier', supplierSchema);

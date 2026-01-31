@@ -58,17 +58,16 @@ variantSchema.index({ tenantId: 1, productId: 1 });
 variantSchema.index({ tenantId: 1, productId: 1, size: 1, color: 1 }, { unique: true });
 
 
-variantSchema.pre('save', function(next) {
+variantSchema.pre('save', async function() {
     if (this.stock < 0) {
-        return next(new Error('Stock cannot be negative'));
+        throw new Error('Stock cannot be negative');
     }
     if (this.reservedStock < 0) {
-        return next(new Error('Reserved stock cannot be negative'));
+        throw new Error('Reserved stock cannot be negative');
     }
     if (this.reservedStock > this.stock) {
-        return next(new Error('Reserved stock cannot exceed total stock'));
+        throw new Error('Reserved stock cannot exceed total stock');
     }
-    next();
 });
 
 const Variant = mongoose.model('Variant', variantSchema);

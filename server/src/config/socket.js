@@ -19,7 +19,21 @@ export const initializeSocket = (httpServer) => {
     // Authentication middleware for Socket.io
     io.use(async (socket, next) => {
         try {
-            const token = socket.handshake.auth.token || socket.handshake.headers.authorization?.replace('Bearer ', '');
+            // Try to get token from multiple sources:
+            // 1. From auth.token (explicit token passed)
+            // 2. From Authorization header
+            // 3. From cookies (for httpOnly cookie-based auth)
+            let token = socket.handshake.auth.token || socket.handshake.headers.authorization?.replace('Bearer ', '');
+            
+            // If no token in auth/header, try to get from cookies
+            if (!token && socket.handshake.headers.cookie) {
+                const cookies = socket.handshake.headers.cookie.split(';').reduce((acc, cookie) => {
+                    const [key, value] = cookie.trim().split('=');
+                    acc[key] = value;
+                    return acc;
+                }, {});
+                token = cookies.token;
+            }
             
             if (!token) {
                 return next(new Error('Authentication error: No token provided'));

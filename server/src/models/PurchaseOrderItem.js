@@ -59,11 +59,10 @@ purchaseOrderItemSchema.index({ tenantId: 1, purchaseOrderId: 1 });
 purchaseOrderItemSchema.index({ tenantId: 1, variantId: 1 });
 
 // Validation: quantityReceived cannot exceed quantityOrdered
-purchaseOrderItemSchema.pre('save', function(next) {
+purchaseOrderItemSchema.pre('save', async function() {
     if (this.quantityReceived > this.quantityOrdered) {
-        return next(new Error('Quantity received cannot exceed quantity ordered'));
+        throw new Error('Quantity received cannot exceed quantity ordered');
     }
-    next();
 });
 
 const PurchaseOrderItem = mongoose.model('PurchaseOrderItem', purchaseOrderItemSchema);
