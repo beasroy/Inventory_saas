@@ -4,7 +4,7 @@ import Variant from '../models/Variant.js';
 import mongoose from 'mongoose';
 import { emitStockUpdated } from '../utils/socketEvents.js';
 
-// Update variant stock (can be used with or without session for transactions)
+
 export const updateVariantStock = async (variantId, quantityChange, tenantId, session = null) => {
     try {
         const variant = await Variant.findOne({

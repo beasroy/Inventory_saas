@@ -1,10 +1,6 @@
 import { emitToTenant } from '../config/socket.js';
 
-/**
- * Emit stock updated event to tenant
- * @param {Object} req - Express request object
- * @param {Object} stockData - Stock update data
- */
+
 export const emitStockUpdated = (req, stockData) => {
     const io = req.app.get('io');
     if (!io) return;
@@ -25,11 +21,7 @@ export const emitStockUpdated = (req, stockData) => {
     });
 };
 
-/**
- * Emit purchase order created event
- * @param {Object} req - Express request object
- * @param {Object} poData - Purchase order data
- */
+
 export const emitPurchaseOrderCreated = (req, poData) => {
     const io = req.app.get('io');
     if (!io) return;
@@ -46,11 +38,7 @@ export const emitPurchaseOrderCreated = (req, poData) => {
     });
 };
 
-/**
- * Emit purchase order status updated event
- * @param {Object} req - Express request object
- * @param {Object} poData - Purchase order data
- */
+
 export const emitPurchaseOrderStatusUpdated = (req, poData) => {
     const io = req.app.get('io');
     if (!io) return;
@@ -66,11 +54,7 @@ export const emitPurchaseOrderStatusUpdated = (req, poData) => {
     });
 };
 
-/**
- * Emit receipt created event (triggers stock update)
- * @param {Object} req - Express request object
- * @param {Object} receiptData - Receipt data
- */
+
 export const emitReceiptCreated = (req, receiptData) => {
     const io = req.app.get('io');
     if (!io) return;
@@ -87,11 +71,7 @@ export const emitReceiptCreated = (req, receiptData) => {
     });
 };
 
-/**
- * Emit order created event (for sales tracking)
- * @param {Object} req - Express request object
- * @param {Object} orderData - Order data
- */
+
 export const emitOrderCreated = (req, orderData) => {
     const io = req.app.get('io');
     if (!io) return;
@@ -106,11 +86,7 @@ export const emitOrderCreated = (req, orderData) => {
     });
 };
 
-/**
- * Emit order fulfilled event (triggers stock update and sales tracking)
- * @param {Object} req - Express request object
- * @param {Object} orderData - Order data
- */
+
 export const emitOrderFulfilled = (req, orderData) => {
     const io = req.app.get('io');
     if (!io) return;
@@ -126,11 +102,7 @@ export const emitOrderFulfilled = (req, orderData) => {
     });
 };
 
-/**
- * Emit inventory value updated event
- * @param {Object} req - Express request object
- * @param {Object} inventoryData - Inventory data
- */
+
 export const emitInventoryValueUpdated = (req, inventoryData) => {
     const io = req.app.get('io');
     if (!io) return;
