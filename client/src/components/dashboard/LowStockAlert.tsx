@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { Link } from 'react-router-dom';
-import { LowStockItem } from '../../types/dashboard.types';
+import type { LowStockItem } from '../../types/dashboard.types';
 import { formatNumber } from '../../utils/formatters';
 
 interface LowStockAlertProps {

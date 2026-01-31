@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { TopSeller } from '../../types/dashboard.types';
+import type { TopSeller } from '../../types/dashboard.types';
 import { formatNumber, formatCurrency } from '../../utils/formatters';
 
 interface TopSellersListProps {

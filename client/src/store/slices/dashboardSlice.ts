@@ -1,6 +1,7 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import type { PayloadAction } from '@reduxjs/toolkit';
 import api from '../../services/api';
-import { DashboardState, DashboardData, LowStockItem } from '../../types/dashboard.types';
+import type { DashboardState, DashboardData, LowStockItem } from '../../types/dashboard.types';
 
 const initialState: DashboardState = {
   data: null,
@@ -12,7 +13,7 @@ const initialState: DashboardState = {
 // Fetch dashboard data
 export const fetchDashboardData = createAsyncThunk(
   'dashboard/fetchDashboardData',
-  async (lowStockThreshold?: number, { rejectWithValue }) => {
+  async (lowStockThreshold: number | undefined, { rejectWithValue }) => {
     try {
       const params = lowStockThreshold ? { lowStockThreshold } : {};
       const response = await api.get<{ success: boolean; data: DashboardData }>('/analytics/dashboard', {

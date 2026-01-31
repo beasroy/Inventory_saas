@@ -9,7 +9,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
-import { StockMovementDataPoint } from '../../types/dashboard.types';
+import type { StockMovementDataPoint } from '../../types/dashboard.types';
 import { formatDate, formatNumber } from '../../utils/formatters';
 
 interface StockMovementChartProps {
@@ -54,7 +54,7 @@ export const StockMovementChart = memo(({ data, loading }: StockMovementChartPro
             />
             <YAxis tick={{ fontSize: 12 }} />
             <Tooltip
-              formatter={(value: number) => formatNumber(value)}
+              formatter={(value: number | undefined) => value === undefined ? '' : formatNumber(value)}
               labelStyle={{ color: '#374151' }}
             />
             <Legend />
