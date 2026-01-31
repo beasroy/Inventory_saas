@@ -21,21 +21,26 @@ export const getPermissionsForRole = (role) => {
 
 const setTokenCookie = (res, token) => {
     const isProduction = process.env.NODE_ENV === 'production';
+    // For cross-domain cookies in production, use 'none' for sameSite
+    const sameSiteValue = isProduction ? 'none' : 'lax';
 
     res.cookie('token', token, {
         httpOnly: true,
-        secure: isProduction,
-        sameSite: isProduction ? 'strict' : 'lax',
+        secure: isProduction, // Must be true when sameSite is 'none'
+        sameSite: sameSiteValue,
         maxAge: 7 * 24 * 60 * 60 * 1000,
         path: '/'
     });
 };
 
 const clearTokenCookie = (res) => {
+    const isProduction = process.env.NODE_ENV === 'production';
+    const sameSiteValue = isProduction ? 'none' : 'lax';
+    
     res.clearCookie('token', {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
+        secure: isProduction,
+        sameSite: sameSiteValue,
         path: '/'
     });
 };
