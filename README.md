@@ -422,9 +422,5 @@ The seed script creates 3 tenants with different user roles. All users have the 
 - Tailwind CSS
 - Recharts
 
----
 
-## License
-
-ISC
 
