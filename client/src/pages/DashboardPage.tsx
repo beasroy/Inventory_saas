@@ -1,6 +1,6 @@
 import { useEffect, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '../store';
+import type { RootState, AppDispatch } from '../store';
 import { fetchDashboardData } from '../store/slices/dashboardSlice';
 import { useSocket } from '../hooks/useSocket';
 import { Layout } from '../components/layout/Layout';

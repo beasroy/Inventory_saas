@@ -13,11 +13,9 @@ function AppContent() {
   const location = useLocation();
 
   useEffect(() => {
-    // Only check current user if not on login/register pages
     if (location.pathname !== ROUTES.LOGIN && location.pathname !== ROUTES.REGISTER) {
       getCurrentUser();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname]);
 
   return (
