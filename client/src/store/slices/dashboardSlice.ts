@@ -29,6 +29,25 @@ export const fetchDashboardData = createAsyncThunk(
   }
 );
 
+// Fetch only low stock items (for real-time updates)
+export const fetchLowStockItems = createAsyncThunk(
+  'dashboard/fetchLowStockItems',
+  async (lowStockThreshold: number | undefined, { rejectWithValue }) => {
+    try {
+      const params = lowStockThreshold ? { lowStockThreshold } : {};
+      const response = await api.get<{ success: boolean; data: DashboardData }>('/analytics/dashboard', {
+        params,
+      });
+      if (response.data.success) {
+        return response.data.data.lowStockItems;
+      }
+      return rejectWithValue('Failed to fetch low stock items');
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.error || 'Failed to fetch low stock items');
+    }
+  }
+);
+
 const dashboardSlice = createSlice({
   name: 'dashboard',
   initialState,
@@ -68,6 +87,15 @@ const dashboardSlice = createSlice({
       .addCase(fetchDashboardData.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+      });
+
+    // Fetch Low Stock Items
+    builder
+      .addCase(fetchLowStockItems.fulfilled, (state, action: PayloadAction<LowStockItem[]>) => {
+        if (state.data) {
+          state.data.lowStockItems = action.payload;
+          state.lastUpdated = new Date().toISOString();
+        }
       });
   },
 });

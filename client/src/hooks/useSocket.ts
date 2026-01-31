@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import type { AppDispatch } from '../store';
 import { getSocket, connectSocket, disconnectSocket } from '../services/socket';
-import { updateInventoryValue, updateLowStockItems } from '../store/slices/dashboardSlice';
+import { updateInventoryValue, fetchLowStockItems } from '../store/slices/dashboardSlice';
 import { useAuth } from './useAuth';
 
 export const useSocket = () => {
@@ -21,26 +21,64 @@ export const useSocket = () => {
     socketRef.current = socket;
 
     // Listen for stock updates
-    socket.on('stock:updated', (data: { variantId: string; newStock: number }) => {
-      // Trigger dashboard refresh or update specific values
-      // For now, we'll just log - actual update will come from dashboard refresh
-      console.log('Stock updated:', data);
+    socket.on('stock:updated', (_data: {
+      variantId: string;
+      variantSku: string;
+      productId: string;
+      previousStock: number;
+      newStock: number;
+      movementType: string;
+      quantity: number;
+    }) => {
+      // Stock updated - update low stock items in real-time
+      // Inventory value will be updated via inventory:value_updated event
+      dispatch(fetchLowStockItems());
     });
 
-    // Listen for inventory value updates
-    socket.on('inventory:value_updated', (data: { inventoryValue: number }) => {
-      dispatch(updateInventoryValue(data.inventoryValue));
+    // Listen for inventory value updates (real-time)
+    socket.on('inventory:value_updated', (data: { totalValue: number; previousValue?: number }) => {
+      // Update inventory value in real-time without refreshing
+      dispatch(updateInventoryValue(data.totalValue));
     });
 
     // Listen for purchase order updates that affect low stock
-    socket.on('purchase_order:created', () => {
-      // Low stock items might change, but we'll refresh on next dashboard load
-      console.log('Purchase order created');
+    socket.on('purchase_order:created', (_data: {
+      purchaseOrderId: string;
+      poNumber: string;
+      items: Array<{ variantId: string; quantityOrdered: number }>;
+    }) => {
+      // Purchase order created - update low stock items in real-time
+      // (pending PO quantities affect low stock calculations)
+      dispatch(fetchLowStockItems());
     });
 
-    socket.on('receipt:created', () => {
-      // Inventory value and low stock might change
-      console.log('Receipt created');
+    socket.on('purchase_order:status_updated', (_data: {
+      purchaseOrderId: string;
+      poNumber: string;
+      previousStatus: string;
+      newStatus: string;
+    }) => {
+      // Purchase order status updated - update low stock items in real-time
+      // (status changes affect pending quantities, e.g., cancelled POs remove pending quantities)
+      dispatch(fetchLowStockItems());
+    });
+
+    socket.on('receipt:created', (_data: {
+      receiptId: string;
+      receiptNumber: string;
+      purchaseOrderId: string;
+      stockUpdates: Array<{
+        variantId: string;
+        variantSku: string;
+        productId: string;
+        quantityReceived: number;
+        previousStock: number;
+        newStock: number;
+      }>;
+    }) => {
+      // Receipt created - update low stock items in real-time
+      // Inventory value will be updated via inventory:value_updated event
+      dispatch(fetchLowStockItems());
     });
 
     return () => {
@@ -48,6 +86,7 @@ export const useSocket = () => {
         socketRef.current.off('stock:updated');
         socketRef.current.off('inventory:value_updated');
         socketRef.current.off('purchase_order:created');
+        socketRef.current.off('purchase_order:status_updated');
         socketRef.current.off('receipt:created');
       }
     };
