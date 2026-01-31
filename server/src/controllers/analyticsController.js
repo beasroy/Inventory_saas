@@ -1,8 +1,6 @@
-import Product from '../models/Product.js';
 import Variant from '../models/Variant.js';
 import StockMovement from '../models/StockMovement.js';
 import PurchaseOrderItem from '../models/PurchaseOrderItem.js';
-import PurchaseOrder from '../models/PurchaseOrder.js';
 import mongoose from 'mongoose';
 
 const LOW_STOCK_THRESHOLD = 10; // Default threshold
@@ -13,7 +11,6 @@ export const getDashboardData = async (req, res) => {
         const tenantId = req.tenant._id;
         const { lowStockThreshold = LOW_STOCK_THRESHOLD } = req.query;
 
-        // Run all queries in parallel for better performance
         const [inventoryValue, lowStockItems, topSellers, stockMovementGraph] = await Promise.all([
             calculateInventoryValue(tenantId),
             getLowStockItems(tenantId, parseInt(lowStockThreshold)),
