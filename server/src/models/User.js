@@ -41,10 +41,12 @@ const userSchema = new mongoose.Schema({
     permissions: [{
         type: String,
         enum: [
-            'view_products', 'edit_products',
+            'view_products', 'create_products', 'edit_products', 'delete_products',
             'view_orders', 'create_orders',
             'view_inventory', 'adjust_inventory',
-            'view_users', 'invite_users'
+            'view_users', 'invite_users',
+            'view_suppliers', 'create_suppliers', 'edit_suppliers', 'delete_suppliers',
+            'view_purchase_orders', 'create_purchase_orders', 'edit_purchase_orders', 'delete_purchase_orders'
         ]
     }],
 
