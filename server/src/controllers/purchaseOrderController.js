@@ -7,6 +7,7 @@ import Variant from '../models/Variant.js';
 import { updateVariantStock } from './stockMovementController.js';
 import StockMovement from '../models/StockMovement.js';
 import mongoose from 'mongoose';
+import { emitPurchaseOrderCreated, emitPurchaseOrderStatusUpdated, emitReceiptCreated } from '../utils/socketEvents.js';
 
 // Generate PO number: PO-YYYYMMDD-####
 const generatePONumber = async (tenantId) => {
@@ -202,6 +203,19 @@ export const createPurchaseOrder = async (req, res) => {
         const itemsWithDetails = await PurchaseOrderItem.find({ purchaseOrderId: poId })
             .populate('productId', 'name productCode')
             .populate('variantId', 'sku size color');
+
+        // Emit socket event for PO creation
+        emitPurchaseOrderCreated(req, {
+            purchaseOrderId: poId.toString(),
+            poNumber: poNumber,
+            supplierId: supplierId.toString(),
+            status: 'draft',
+            items: itemsWithDetails.map(item => ({
+                itemId: item._id.toString(),
+                variantId: item.variantId.toString(),
+                quantityOrdered: item.quantityOrdered
+            }))
+        });
 
         res.status(201).json({
             success: true,
@@ -665,8 +679,17 @@ export const updatePurchaseOrderStatus = async (req, res) => {
             });
         }
 
+        const previousStatus = purchaseOrder.status;
         purchaseOrder.status = status;
         await purchaseOrder.save();
+
+        // Emit socket event for status update
+        emitPurchaseOrderStatusUpdated(req, {
+            purchaseOrderId: id,
+            poNumber: purchaseOrder.poNumber,
+            previousStatus,
+            newStatus: status
+        });
 
         res.json({
             success: true,
@@ -860,13 +883,44 @@ export const createPurchaseOrderReceipt = async (req, res) => {
         }
 
         // Update PO status to 'received' if all items are fully received
+        let poStatusUpdated = false;
         if (allItemsReceived && purchaseOrder.status !== 'received') {
             purchaseOrder.status = 'received';
             await purchaseOrder.save({ session });
+            poStatusUpdated = true;
         }
 
         await session.commitTransaction();
         session.endSession();
+
+        // Prepare stock updates data for socket event
+        const stockUpdates = itemsToUpdate.map(({ variantId, variantSku, productId, quantityReceived, poItem }) => ({
+            variantId: variantId.toString(),
+            variantSku,
+            productId: productId.toString(),
+            quantityReceived,
+            previousStock: poItem.quantityReceived - quantityReceived,
+            newStock: poItem.quantityReceived
+        }));
+
+        // Emit socket event for receipt creation
+        emitReceiptCreated(req, {
+            receiptId: receipt[0]._id.toString(),
+            receiptNumber,
+            purchaseOrderId: id,
+            items: receiptItems,
+            stockUpdates
+        });
+
+        // Emit PO status update if it was changed to 'received'
+        if (poStatusUpdated) {
+            emitPurchaseOrderStatusUpdated(req, {
+                purchaseOrderId: id,
+                poNumber: purchaseOrder.poNumber,
+                previousStatus: purchaseOrder.status === 'received' ? 'confirmed' : purchaseOrder.status,
+                newStatus: 'received'
+            });
+        }
 
         // Return receipt with populated data
         const populatedReceipt = await PurchaseOrderReceipt.findById(receipt[0]._id)

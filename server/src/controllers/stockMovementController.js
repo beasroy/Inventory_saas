@@ -2,6 +2,7 @@ import StockMovement from '../models/StockMovement.js';
 import Product from '../models/Product.js';
 import Variant from '../models/Variant.js';
 import mongoose from 'mongoose';
+import { emitStockUpdated } from '../utils/socketEvents.js';
 
 // Update variant stock (can be used with or without session for transactions)
 export const updateVariantStock = async (variantId, quantityChange, tenantId, session = null) => {
@@ -170,6 +171,19 @@ export const createStockMovement = async (req, res) => {
         // Commit transaction - both operations succeed or both fail
         await session.commitTransaction();
         session.endSession();
+
+        // Emit socket event for real-time updates
+        emitStockUpdated(req, {
+            variantId: variant._id.toString(),
+            variantSku: variantSku.toUpperCase(),
+            productId: productId.toString(),
+            previousStock: stockUpdate.previousStock,
+            newStock: stockUpdate.newStock,
+            movementType,
+            quantity: quantityChange,
+            referenceId: referenceId || null,
+            referenceType: referenceType || null
+        });
 
         res.status(201).json({
             success: true,
